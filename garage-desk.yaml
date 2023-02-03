@@ -1,0 +1,99 @@
+substitutions:
+  name: "garage-desk"
+  friendly_name: "Garage Desk"
+  unit_of_measurement: 'cm'
+  min_height: '60'
+  max_height: '125'
+  default_standing_height: '116'
+  stopping_distance: '1'
+  id_prefix: "garage_desk"
+
+packages:
+  device_base: !include includes/common_settings.yaml
+
+esphome:
+  name: ${name}
+  platform: ESP8266
+  board: esp01_1m
+
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/ssieb/custom_components
+    components: [ desky ]
+
+uart:
+  - id: desk_uart
+    baud_rate: 9600
+    rx_pin: 1
+
+desky:
+  id: garage_desk_controller
+  up:    
+    number: 4 #D2
+    inverted: true 
+  down:  
+    number: 5 #D1
+    inverted: true
+  request:
+    number: 14 #D6
+    inverted: true
+  stopping_distance: ${stopping_distance}
+  timeout: 15s
+  height:
+    id: garage_desk_height
+    accuracy_decimals: 1
+    unit_of_measurement: ${unit_of_measurement}
+    filters:
+    - delta: 0.127
+    - throttle: 200ms
+    - multiply: 0.1
+cover:
+  - platform: template
+    name: ${friendly_name}
+    device_class: blind
+    icon: mdi:desk
+    lambda: |-
+      if (id(garage_desk_height).state >= id(garage_desk_standing_height).state) {
+        return COVER_OPEN;
+      } else {
+        return COVER_CLOSED;
+      }
+    open_action:
+      - lambda: id(garage_desk_controller).move_to(id(garage_desk_standing_height).state * 10);  
+    close_action:
+      - lambda: id(garage_desk_controller).move_to(id(garage_desk_sitting_height).state * 10);  
+    stop_action:
+      - lambda: id(garage_desk_controller).stop();
+    tilt_lambda: |-
+        return (id(garage_desk_height).state - ${min_height}) / (${max_height} - ${min_height});
+    tilt_action:
+      - lambda: id(garage_desk_controller).move_to(((tilt * (${max_height} - ${min_height})) + ${min_height}) * 10);  
+
+number:
+  - platform: template
+    id: garage_desk_sitting_height
+    name: ${friendly_name} Sitting Height
+    optimistic: true
+    unit_of_measurement: ${unit_of_measurement}
+    min_value: ${min_height}
+    max_value: ${default_standing_height}
+    step: 0.1
+    restore_value: true
+    initial_value: ${min_height}
+    mode: box
+    icon: mdi:arrow-down
+    
+  - platform: template
+    id: garage_desk_standing_height
+    name: ${friendly_name} Standing Height
+    optimistic: true
+    unit_of_measurement: ${unit_of_measurement}
+    min_value: ${default_standing_height}
+    max_value: ${max_height}
+    step: 0.1
+    restore_value: true
+    initial_value: ${default_standing_height}
+    mode: box
+    icon: mdi:arrow-up
