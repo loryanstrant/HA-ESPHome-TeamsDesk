@@ -1,0 +1,15 @@
+type: conditional
+conditions:
+  - entity: sensor.loryan_s21_room_location
+    state: Garage
+  - entity: binary_sensor.workday_sensor
+    state: 'on'
+  - entity: binary_sensor.working_hours
+    state: 'on'
+card:
+  type: gauge
+  entity: sensor.loryan_standing_time
+  max: 9
+  needle: false
+  unit: Hrs
+  name: Standing time
