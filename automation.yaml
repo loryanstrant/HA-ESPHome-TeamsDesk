@@ -1,0 +1,115 @@
+alias: LORYAN - Teams presence
+description: >-
+  Changes LED lights & tablet screen, raises desks based on Teams presence and
+  room location.
+trigger:
+  - platform: state
+    entity_id: sensor.teams_status
+    from:
+      - Available
+      - Away
+      - Busy
+      - DoNotDisturb
+      - InAMeeting
+    to:
+      - InACall
+      - Presenting
+    id: teams-call
+  - platform: state
+    entity_id: sensor.teams_status
+    to: Away
+    id: teams-away
+  - platform: state
+    entity_id: sensor.teams_status
+    from:
+      - Presenting
+      - InACall
+      - Away
+    id: teams-available
+condition:
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: "on"
+action:
+  - if:
+      - condition: trigger
+        id: teams-call
+      - condition: state
+        entity_id: sensor.loryan_s21_room_location
+        state: Garage
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.garage_desk_status
+            state: Standing
+        alias: If garage desk is NOT already standing
+    then:
+      - service: cover.set_cover_tilt_position
+        data:
+          tilt_position: 86
+        target:
+          entity_id: cover.garage_desk
+    alias: Teams call - in garage
+  - if:
+      - condition: trigger
+        id: teams-call
+      - condition: state
+        entity_id: sensor.loryan_s21_room_location
+        state: Study
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.study_desk_status
+            state: Standing
+        alias: If study desk is NOT already standing
+    then:
+      - parallel:
+          - service: light.turn_on
+            data:
+              color_name: red
+            target:
+              device_id: b5235eb447862a6c15c06acd0df3831d
+          - service: browser_mod.navigate
+            data:
+              path: /lovelace/on-a-call?hide_sidebar?hide_overflow
+            target:
+              device_id: edea85b918c512cd0284c70066b39e18
+          - service: cover.set_cover_tilt_position
+            data:
+              tilt_position: 86
+            target:
+              entity_id: cover.study_desk
+    alias: Teams call - in study
+  - if:
+      - condition: trigger
+        id: teams-away
+      - condition: state
+        entity_id: sensor.loryan_s21_room_location
+        state: Study
+    then:
+      - service: light.turn_on
+        data:
+          color_name: yellow
+        target:
+          device_id: b5235eb447862a6c15c06acd0df3831d
+    alias: Teams away - in study
+  - if:
+      - condition: trigger
+        id: teams-available
+      - condition: state
+        entity_id: sensor.loryan_s21_room_location
+        state: Study
+    then:
+      - parallel:
+          - service: light.turn_on
+            data:
+              color_name: blue
+            target:
+              device_id: b5235eb447862a6c15c06acd0df3831d
+          - service: browser_mod.navigate
+            data:
+              path: /study-tablet/calendar/?kiosk
+            target:
+              device_id: edea85b918c512cd0284c70066b39e18
+    alias: Teams available - in study
+mode: single
