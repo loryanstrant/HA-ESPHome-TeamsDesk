@@ -1,0 +1,51 @@
+
+# Garage desk sit/stand time tracking
+  - platform: history_stats
+    name: Garage desk time standing
+    entity_id: sensor.garage_desk_status
+    state: "Standing"
+    type: time
+    start: "{{ now().replace(hour=8, minute=30, second=0) }}"
+    duration:
+      hours: 9
+  - platform: history_stats
+    name: Garage desk time sitting
+    entity_id: sensor.garage_desk_status
+    state: "Sitting"
+    type: time
+    start: "{{ now().replace(hour=8, minute=30, second=0) }}"
+    duration:
+      hours: 9
+  - platform: history_stats
+    name: Loryan workday garage occupancy
+    entity_id: sensor.loryan_s21_room_location
+    state: "Garage"
+    type: time
+    start: "{{ now().replace(hour=8, minute=30, second=0) }}"
+    duration:
+      hours: 9
+# Study desk sit/stand time tracking
+  - platform: history_stats
+    name: Study desk time standing
+    entity_id: sensor.study_desk_status
+    state: "Standing"
+    type: time
+    start: "{{ now().replace(hour=8, minute=30, second=0) }}"
+    duration:
+      hours: 9
+  - platform: history_stats
+    name: Study desk time sitting
+    entity_id: sensor.study_desk_status
+    state: "Sitting"
+    type: time
+    start: "{{ now().replace(hour=8, minute=30, second=0) }}"
+    duration:
+      hours: 9
+  - platform: history_stats
+    name: Loryan workday study occupancy
+    entity_id: sensor.loryan_s21_room_location
+    state: "Study"
+    type: time
+    start: "{{ now().replace(hour=8, minute=30, second=0) }}"
+    duration:
+      hours: 9
