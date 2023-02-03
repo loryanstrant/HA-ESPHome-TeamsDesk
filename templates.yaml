@@ -1,0 +1,42 @@
+# Loryan standing time
+- sensor:
+    - name: Loryan standing time
+      state: >
+        {{ states('sensor.garage_desk_time_standing') | float + states('sensor.study_desk_time_standing') | float }}
+      attributes:
+        garage: >
+           {{ states('sensor.garage_desk_time_standing') | float(0) }}
+        study: >
+           {{ states('sensor.study_desk_time_standing') | float (0)}}
+           
+         
+################################################################
+# DESK HEIGHT STATES (for automations and cards)
+- sensor:
+    - name: Study Desk Status
+      state: >
+        {% if state_attr("cover.study_desk","current_tilt_position") | float > 80 %}
+            Standing
+        {% else %}
+            Sitting
+        {% endif %}
+      icon: >
+        {% if state_attr("cover.study_desk","current_tilt_position") | float > 80 %}
+          mdi:desk
+        {% else %}
+          mdi:table-chair
+        {% endif %}
+- sensor:
+    - name: Garage Desk Status
+      state: >
+        {% if state_attr("cover.garage_desk","current_tilt_position") | float > 80 %}
+            Standing
+        {% else %}
+            Sitting
+        {% endif %}
+      icon: >
+        {% if state_attr("cover.garage_desk","current_tilt_position") | float > 80 %}
+          mdi:desk
+        {% else %}
+          mdi:table-chair
+        {% endif %}
